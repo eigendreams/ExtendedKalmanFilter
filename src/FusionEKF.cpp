@@ -189,6 +189,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 	// Again the information form would be so much better for this!
 	double currentTimeStamp = measurement_pack.timestamp_ / 1.0e6;
 	float dt = (currentTimeStamp - lastTimeStamp);
+	lastTimeStamp = currentTimeStamp;
 	float dt2 = dt * dt;
 
 	// Later on we will need to recalculate this based on timestamps
@@ -236,9 +237,6 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 		// Set the state
 		Eigen::VectorXd z_meas = Eigen::VectorXd(3);
 		z_meas << rho, phi, drho;
-		// Init cov. as very first update with obv. 0 innovation since we just
-		// set the state. No time dependant matrices (F and Q) are used for the
-		// innovation step!
 		// We will need to calculate a Jacobian though
 		Hj_ = tools.CalculateJacobian(ekf_.x_);
 		ekf_.UpdateEKF(z_meas, Hj_, R_radar_);
@@ -250,9 +248,6 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 		// Set the state
 		Eigen::VectorXd z_meas = Eigen::VectorXd(2);
 		z_meas << x, y;
-		// Init cov. as very first update with obv. 0 innovation since we just
-		// set the state. No time dependant matrices (F and Q) are used for the
-		// innovation step!
 		// The information form would be so much better for this!
 		ekf_.Update(z_meas);
 	}
