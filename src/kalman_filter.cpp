@@ -62,9 +62,9 @@ void KalmanFilter::UpdateEKF(const VectorXd &z, const MatrixXd &Hj, const Matrix
 
 	// There is an omission in the Udacity lesson, since this is a different
 	// sensor and Jacobian, a different noise model for the sensor is ALSO
-	// needed, otherwise matrix dimension will not even match
+	// needed, otherwise matrix dimensions will not even match
 
-	// As you can see, this functions is clearly the same as in the normal update,
+	// As you can see, this function is clearly the same as in the normal update,
 	// just providing masks for the H and R matrices, as I DO NOT want to modify them
 	// for the non linear case (just to avoid constant modifications, besides, since the
 	// linear case essentially leaves matrices unchanged, but the EKF has to calculate a new
