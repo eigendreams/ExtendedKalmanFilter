@@ -59,18 +59,36 @@ void KalmanFilter::UpdateEKF(const VectorXd &z, const MatrixXd &Hj, const Matrix
   DONE:
 	 * update the state by using Extended Kalman Filter equations
 	 */
+#include <math.h>
 
-	// There is an omission in the Udacity lesson, since this is a different
-	// sensor and Jacobian, a different noise model for the sensor is ALSO
-	// needed, otherwise matrix dimensions will not even match
+	// map from cartesian to polar here
+	Eigen::VectorXd h_x_(3);
 
-	// As you can see, this function is clearly the same as in the normal update,
-	// just providing masks for the H and R matrices, as I DO NOT want to modify them
-	// for the non linear case (just to avoid constant modifications, besides, since the
-	// linear case essentially leaves matrices unchanged, but the EKF has to calculate a new
-	// Jacobian (Hj) at each step)
+	float px = x_(0);
+	float py = x_(1);
+	float vx = x_(2);
+	float vy = x_(3);
+	if ( abs(px) < 1e-3 && abs(py) < 1e-3 )
+	{
+		px = 1e-3 * copysign(1.0, px);
+		py = 1e-3 * copysign(1.0, py);
+	}
 
-	Eigen::VectorXd y_innovation   = z - Hj * x_;
+	h_x_(0) = sqrt( px * px + py * py );
+	h_x_(1) = atan2( py, px );
+	h_x_(2) = (px * vx + py * vy) / (h_x_(0));
+
+	Eigen::VectorXd y_innovation   = z - h_x_;
+	// limits check
+	if ( y_innovation(1) > M_PI ) {
+		while ( y_innovation(1) > M_PI )
+			y_innovation(1) = y_innovation(1) - M_PI;
+	}
+	if ( y_innovation(1) < -M_PI) {
+		while ( y_innovation(1) < -M_PI )
+			y_innovation(1) = y_innovation(1) + M_PI;
+		}
+
 	Eigen::MatrixXd S_weightdenom  = Hj * P_ * Hj.transpose() + Rj;
 	Eigen::MatrixXd K_weightmatrix = P_ * Hj.transpose() * S_weightdenom.inverse();
 

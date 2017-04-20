@@ -144,11 +144,6 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 
 			// Set the state
 			ekf_.x_ << x, y, vx, vy;
-			// It is possible to mathematically show this
-			Hj_ = tools.CalculateJacobian(ekf_.x_);
-			Eigen::MatrixXd P_init = MatrixXd(4, 4);
-			P_init = ( Hj_.transpose() * R_radar_.inverse() * Hj_ ).inverse();
-			ekf_.P_ = P_init;
 		}
 		else if (measurement_pack.sensor_type_ == MeasurementPackage::LASER) {
 			/**
@@ -162,10 +157,6 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 
 			// Set the state
 			ekf_.x_ << x, y, vx, vy;
-			// It is possible to mathematically show this
-			Eigen::MatrixXd P_init = MatrixXd(4, 4);
-			P_init = ( H_laser_.transpose() * R_laser_.inverse() * H_laser_ ).inverse();
-			ekf_.P_ = P_init;
 		}
 
 		// done initializing, no need to predict or update
@@ -235,10 +226,9 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 		float drho = measurement_pack.raw_measurements_[2];
 
 		// Set the state
+		Hj_ = tools.CalculateJacobian(ekf_.x_);
 		Eigen::VectorXd z_meas = Eigen::VectorXd(3);
 		z_meas << rho, phi, drho;
-		// We will need to calculate a Jacobian though
-		Hj_ = tools.CalculateJacobian(ekf_.x_);
 		ekf_.UpdateEKF(z_meas, Hj_, R_radar_);
 	} else {
 		// Laser updates
@@ -248,7 +238,6 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 		// Set the state
 		Eigen::VectorXd z_meas = Eigen::VectorXd(2);
 		z_meas << x, y;
-		// The information form would be so much better for this!
 		ekf_.Update(z_meas);
 	}
 
