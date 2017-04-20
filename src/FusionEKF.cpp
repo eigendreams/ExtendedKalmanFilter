@@ -88,7 +88,7 @@ FusionEKF::FusionEKF() {
 					dt,					 0,
 					0,					dt;
 
-	Eigen::MatrixXd Q_process_ = G_process_ * Qv_process_ * G_process_.transpose();
+	Eigen::MatrixXd Q_init_ = G_process_ * Qv_process_ * G_process_.transpose();
 
 	ekf_.Init(
 			x_init,
@@ -96,7 +96,7 @@ FusionEKF::FusionEKF() {
 			F_init,
 			H_laser_,
 			R_laser_,
-			Q_process_
+			Q_init_
 	);
 }
 
