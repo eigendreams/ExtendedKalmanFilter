@@ -60,7 +60,8 @@ FusionEKF::FusionEKF() {
 	// measurment is from a radar, assume  for now a laser first
 	// measurement
 
-	Eigen::VectorXd x_init = {0, 0, 0, 0};
+	Eigen::VectorXd x_init = Eigen::VectorXd(4);
+	x_init << 0, 0, 0, 0;
 
 	Eigen::MatrixXd P_init = MatrixXd(4, 4);
 	P_init << 	1, 0, 0, 0,
@@ -148,7 +149,10 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 			// innovation step!
 			// We will need to calculate a Jacobian though
 			Hj_ = tools.CalculateJacobian(ekf_.x_);
-			ekf_.UpdateEKF(ekf_.x_, Hj_, R_radar_);
+
+			Eigen::VectorXd z_meas = Eigen::VectorXd(3);
+			z_meas << rho, phi, drho;
+			ekf_.UpdateEKF(z_meas, Hj_, R_radar_);
 		}
 		else if (measurement_pack.sensor_type_ == MeasurementPackage::LASER) {
 			/**
@@ -166,7 +170,9 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 			// set the state. No time dependant matrices (F and Q) are used for the
 			// innovation step!
 			// The information form would be so much better for this!
-			ekf_.Update(ekf_.x_);
+			Eigen::VectorXd z_meas = Eigen::VectorXd(2);
+			z_meas << x, y;
+			ekf_.Update(z_meas);
 		}
 
 		// done initializing, no need to predict or update
@@ -232,17 +238,11 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 		// Radar updates
 		float rho  = measurement_pack.raw_measurements_[0];
 		float phi  = measurement_pack.raw_measurements_[1];
-		float dphi = 0.0f; // we do not know this as radar loses information!
 		float drho = measurement_pack.raw_measurements_[2];
 
-		float  x = rho * cos(phi);
-		float  y = rho * sin(phi);
-		// Using the chain rule, hopefully the compiler ignores the right side
-		float vx = drho * cos(phi) - rho * sin(phi) * dphi;
-		float vy = drho * sin(phi) + rho * cos(phi) * dphi;
-
 		// Set the state
-		Eigen::VectorXd z_meas = {x, y, vx, vy};
+		Eigen::VectorXd z_meas = Eigen::VectorXd(3);
+		z_meas << rho, phi, drho;
 		// Init cov. as very first update with obv. 0 innovation since we just
 		// set the state. No time dependant matrices (F and Q) are used for the
 		// innovation step!
@@ -253,11 +253,10 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 		// Laser updates
 		float  x = measurement_pack.raw_measurements_[0];
 		float  y = measurement_pack.raw_measurements_[1];
-		float vx = 0.0f;
-		float vy = 0.0f;
 
 		// Set the state
-		Eigen::VectorXd z_meas = {x, y, vx, vy};
+		Eigen::VectorXd z_meas = Eigen::VectorXd(2);
+		z_meas << x, y;
 		// Init cov. as very first update with obv. 0 innovation since we just
 		// set the state. No time dependant matrices (F and Q) are used for the
 		// innovation step!
