@@ -106,7 +106,7 @@ FusionEKF::~FusionEKF() {}
 
 void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 
-	double lastTimeStamp = 0;
+	static double lastTimeStamp = 0;
 
 	/*****************************************************************************
 	 *  Initialization
