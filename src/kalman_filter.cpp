@@ -61,6 +61,8 @@ void KalmanFilter::UpdateEKF(const VectorXd &z, const MatrixXd &Hj, const Matrix
 	 */
 #include <math.h>
 
+	// Used matrices as input to avoid unnecesary assignment of laser matrices
+
 	// map from cartesian to polar here
 	Eigen::VectorXd h_x_(3);
 
@@ -80,14 +82,10 @@ void KalmanFilter::UpdateEKF(const VectorXd &z, const MatrixXd &Hj, const Matrix
 
 	Eigen::VectorXd y_innovation   = z - h_x_;
 	// limits check
-	if ( y_innovation(1) > M_PI ) {
-		while ( y_innovation(1) > M_PI )
-			y_innovation(1) = y_innovation(1) - M_PI;
-	}
-	if ( y_innovation(1) < -M_PI) {
-		while ( y_innovation(1) < -M_PI )
-			y_innovation(1) = y_innovation(1) + M_PI;
-		}
+	while ( y_innovation(1) > M_PI )
+		y_innovation(1) = y_innovation(1) - M_PI;
+	while ( y_innovation(1) < -M_PI )
+		y_innovation(1) = y_innovation(1) + M_PI;
 
 	Eigen::MatrixXd S_weightdenom  = Hj * P_ * Hj.transpose() + Rj;
 	Eigen::MatrixXd K_weightmatrix = P_ * Hj.transpose() * S_weightdenom.inverse();
