@@ -144,6 +144,17 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 
 			// Set the state
 			ekf_.x_ << x, y, vx, vy;
+			// It is possible to mathematically show this
+			Hj_ = tools.CalculateJacobian(ekf_.x_);
+			Eigen::MatrixXd P_degenerate = MatrixXd(4, 4);
+			P_degenerate = ( Hj_.transpose() * R_radar_.inverse() * Hj_ );
+			for (int idx = 0; idx < 4; idx++)
+			{
+				if( P_degenerate(idx, idx) > 0 )
+				{
+					ekf_.P_(idx, idx) = 1.0 / P_degenerate(idx, idx);
+				}
+			}
 		}
 		else if (measurement_pack.sensor_type_ == MeasurementPackage::LASER) {
 			/**
@@ -157,6 +168,16 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 
 			// Set the state
 			ekf_.x_ << x, y, vx, vy;
+			// It is possible to mathematically show this
+			Eigen::MatrixXd P_degenerate = MatrixXd(4, 4);
+			P_degenerate = ( H_laser_.transpose() * R_laser_.inverse() * H_laser_ );
+			for (int idx = 0; idx < 4; idx++)
+			{
+				if( P_degenerate(idx, idx) > 0 )
+				{
+					ekf_.P_(idx, idx) = 1.0 / P_degenerate(idx, idx);
+				}
+			}
 		}
 
 		// done initializing, no need to predict or update
