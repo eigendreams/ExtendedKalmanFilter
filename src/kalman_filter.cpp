@@ -62,6 +62,8 @@ void KalmanFilter::UpdateEKF(const VectorXd &z, const MatrixXd &Hj, const Matrix
 #include <math.h>
 
 	// Used matrices as input to avoid unnecesary assignment of laser matrices
+	// Also, since the meas. is different from laser, we ALSO need the radar error matrix!
+	// Otherwise dimensions will not even check out
 
 	// map from cartesian to polar here
 	Eigen::VectorXd h_x_(3);
